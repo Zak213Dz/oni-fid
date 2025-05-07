@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formulaire Fidélité</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px; text-align: center;">
+  <h1>Formulaire d'inscription</h1>
+  <form id="form">
+    <input type="text" name="nom" placeholder="Nom" required><br><br>
+    <input type="text" name="prenom" placeholder="Prénom" required><br><br>
+    <input type="text" name="telephone" placeholder="Téléphone" required><br><br>
+    <button type="submit">Envoyer</button>
+  </form>
+
+  <script>
+    document.getElementById('form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = {
+        nom: formData.get('nom'),
+        prenom: formData.get('prenom'),
+        telephone: formData.get('telephone')
+      };
+
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbwCO-zsTF5urbpocnzR-eiFdxJGXrwrOOTe_fUiJo2vBd5Ekt_PM7bgJkF1lBAbDPxdiA/exec", {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const result = await response.json();
+        if (result.redirectUrl) {
+          window.location.href = result.redirectUrl;
+        } else {
+          alert("Erreur lors de la redirection.");
+        }
+      } catch (error) {
+        alert("Une erreur est survenue : " + error);
+      }
+    });
+  </script>
+</body>
+</html>
