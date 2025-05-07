@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carte de fidélité</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #fdfdfd;
+    }
+    .carte {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      border: 2px solid #000;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="carte" id="contenu">
+    <p>Chargement...</p>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientID = urlParams.get("id");
+    const fichierCSV = "https://raw.githubusercontent.com/Zak213Dz/oni-fid/main/Formulaire%20Fid%C3%A9lit%C3%A9%20-%20Fiches%20Clients.csv";
+
+    fetch(fichierCSV)
+      .then(response => response.text())
+      .then(data => {
+        const lignes = data.split("\n").slice(1); // ignorer l'entête
+        let clientTrouvé = false;
+
+        lignes.forEach(ligne => {
+          const [horodateur, nom, prénom, téléphone, id, points, montant] = ligne.split(",");
+
+          if (id && id.trim() === clientID) {
+            document.getElementById("contenu").innerHTML = `
+              <h2>Carte de fidélité</h2>
+              <p><strong>Nom :</strong> ${nom} ${prénom}</p>
+              <p><strong>ID Client :</strong> ${id}</p>
+              <p><strong>Téléphone :</strong> ${téléphone}</p>
+              <p><strong>Total Points :</strong> ${points}</p>
+              <p><strong>Montant cumulé :</strong> ${montant} €</p>
+            `;
+            clientTrouvé = true;
+          }
+        });
+
+        if (!clientTrouvé) {
+          document.getElementById("contenu").innerHTML = "<p>Client introuvable.</p>";
+        }
+      })
+      .catch(error => {
+        console.error("Erreur :", error);
+        document.getElementById("contenu").innerHTML = "<p>Erreur de chargement.</p>";
+      });
+  </script>
+</body>
+</html>
+&ééééééééé
