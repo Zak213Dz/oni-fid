@@ -2,42 +2,65 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Formulaire d'inscription</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    form {
+      display: inline-block;
+      text-align: left;
+    }
+    input[type="text"], input[type="tel"] {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+    }
+    input[type="submit"] {
+      background-color: black;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h2>Formulaire d'inscription</h2>
-  <form id="form">
-    <input type="text" name="nom" placeholder="Nom" required><br>
-    <input type="text" name="prenom" placeholder="Prénom" required><br>
-    <input type="text" name="telephone" placeholder="Téléphone" required><br>
-    <button type="submit">Envoyer</button>
+  <h1>Formulaire d'inscription</h1>
+  <form id="inscription-form">
+    <input type="text" name="nom" placeholder="Nom" required>
+    <input type="text" name="prenom" placeholder="Prénom" required>
+    <input type="tel" name="telephone" placeholder="Téléphone" required>
+    <input type="submit" value="Envoyer">
   </form>
 
   <script>
-    document.getElementById('form').addEventListener('submit', async function (e) {
+    const form = document.getElementById("inscription-form");
+
+    form.addEventListener("submit", function(e) {
       e.preventDefault();
-      const form = e.target;
-      const data = new FormData(form);
-      const params = new URLSearchParams();
-      for (const [key, value] of data.entries()) {
-        params.append(key, value);
+
+      const formData = new FormData(form);
+      const data = new URLSearchParams();
+      for (const pair of formData) {
+        data.append(pair[0], pair[1]);
       }
 
-      try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwCO-zsTF5urbpocnzR-eiFdxJGXrwrOOTe_fUiJo2vBd5Ekt_PM7bgJkF1lBAbDPxdiA/exec', {
-          method: 'POST',
-          body: params
-        });
-        const result = await response.json();
-        if (result.success) {
-          window.location.href = result.redirectUrl;
-        } else {
-          alert("Erreur: " + result.message);
-        }
-      } catch (error) {
-        alert("Une erreur est survenue");
-        console.error(error);
-      }
+      fetch("https://script.google.com/macros/s/AKfycbzb4cFUQWtgL8eBBu-YCvXThGkvsGppDLEYZwRFhUOJtPKIRVMO8SUGaqPv8OY586m1/exec", {
+        method: "POST",
+        body: data
+      })
+      .then(response => response.text())
+      .then(id => {
+        // Redirection vers la carte personnalisée du client
+        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}`;
+      })
+      .catch(error => {
+        alert("Une erreur est survenue : " + error);
+      });
     });
   </script>
 </body>
