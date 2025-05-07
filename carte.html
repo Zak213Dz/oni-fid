@@ -1,65 +1,71 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Carte de fidélité</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #fdfdfd;
+      padding: 2rem;
+      background: #f4f4f4;
+      text-align: center;
     }
-    .carte {
-      max-width: 400px;
-      margin: auto;
-      padding: 20px;
-      border: 2px solid #000;
-      border-radius: 10px;
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: inline-block;
+      min-width: 300px;
+    }
+    .notfound {
+      color: red;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="carte" id="contenu">
-    <p>Chargement...</p>
-  </div>
+  <div class="card" id="carte"></div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const clientID = urlParams.get("id");
-    const fichierCSV = "https://raw.githubusercontent.com/Zak213Dz/oni-fid/main/Formulaire%20Fid%C3%A9lit%C3%A9%20-%20Fiches%20Clients.csv";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
 
-    fetch(fichierCSV)
-      .then(response => response.text())
-      .then(data => {
-        const lignes = data.split("\n").slice(1); // ignorer l'entête
-        let clientTrouvé = false;
+    async function chargerDonnees() {
+      const reponse = await fetch("clients.csv");
+      const texte = await reponse.text();
 
-        lignes.forEach(ligne => {
-          const [horodateur, nom, prénom, téléphone, id, points, montant] = ligne.split(",");
-
-          if (id && id.trim() === clientID) {
-            document.getElementById("contenu").innerHTML = `
-              <h2>Carte de fidélité</h2>
-              <p><strong>Nom :</strong> ${nom} ${prénom}</p>
-              <p><strong>ID Client :</strong> ${id}</p>
-              <p><strong>Téléphone :</strong> ${téléphone}</p>
-              <p><strong>Total Points :</strong> ${points}</p>
-              <p><strong>Montant cumulé :</strong> ${montant} €</p>
-            `;
-            clientTrouvé = true;
-          }
+      const lignes = texte.trim().split("\n");
+      const entetes = lignes[0].split(",");
+      
+      const clients = lignes.slice(1).map(ligne => {
+        const valeurs = ligne.split(",");
+        const client = {};
+        entetes.forEach((cle, i) => {
+          client[cle.trim()] = valeurs[i]?.trim();
         });
-
-        if (!clientTrouvé) {
-          document.getElementById("contenu").innerHTML = "<p>Client introuvable.</p>";
-        }
-      })
-      .catch(error => {
-        console.error("Erreur :", error);
-        document.getElementById("contenu").innerHTML = "<p>Erreur de chargement.</p>";
+        return client;
       });
+
+      const clientTrouve = clients.find(c => c["ID Client"] === id);
+
+      const carte = document.getElementById("carte");
+      if (clientTrouve) {
+        carte.innerHTML = `
+          <h2>Carte de fidélité</h2>
+          <p><strong>Nom :</strong> ${clientTrouve["Nom"] || ""} ${clientTrouve["Prénom"] || ""}</p>
+          <p><strong>ID Client :</strong> ${clientTrouve["ID Client"]}</p>
+          <p><strong>Téléphone :</strong> ${clientTrouve["Téléphone"]}</p>
+          <p><strong>Total Points :</strong> ${clientTrouve["Total Points"]}</p>
+          <p><strong>Montant cumulé :</strong> ${clientTrouve["Montant Cumulé"]} €</p>
+        `;
+      } else {
+        carte.innerHTML = `<p class="notfound">Client introuvable.</p>`;
+      }
+    }
+
+    chargerDonnees();
   </script>
 </body>
 </html>
-&ééééééééé
