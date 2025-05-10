@@ -1,30 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Carte de Fidélité</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      padding: 40px;
       text-align: center;
+      padding-top: 40px;
     }
-    .carte {
-      background-color: white;
+    .card {
+      display: inline-block;
       padding: 25px;
       border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-      max-width: 400px;
-      margin: auto;
-    }
-    h2 {
-      margin-bottom: 20px;
-    }
-    p {
-      font-size: 16px;
-      margin: 8px 0;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
     .qr-code {
       margin-top: 20px;
@@ -32,47 +21,40 @@
   </style>
 </head>
 <body>
-  <div class="carte" id="carte">
+  <div class="card">
     <h2>Carte de Fidélité</h2>
-    <p><strong>Nom :</strong> <span id="nom"></span></p>
-    <p><strong>Prénom :</strong> <span id="prenom"></span></p>
-    <p><strong>ID Client :</strong> <span id="idClient"></span></p>
-    <p><strong>Total Points :</strong> <span id="points"></span></p>
-    <p><strong>Montant cumulé :</strong> <span id="montant"></span> €</p>
-    <div class="qr-code">
-      <img id="qr" src="" alt="QR Code">
-    </div>
+    <p id="nom">Nom :</p>
+    <p id="prenom">Prénom :</p>
+    <p id="points">Total Points :</p>
+    <p id="montant">Montant cumulé :</p>
+    <div class="qr-code" id="qrcode"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id");
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
 
-    if (!id) {
-      document.getElementById("carte").innerHTML = "<p style='color:red;'>Client introuvable.</p>";
-    } else {
-      fetch("https://opensheet.elk.sh/1s0iVzJkXSCcnJ7itvwtheTw9cdf35LxWbQ31Zuu9IXE/Réponses Formulaire")
-        .then(response => response.json())
-        .then(data => {
-          const client = data.find(row => row["ID Client"] === id);
-          if (client) {
-            document.getElementById("nom").textContent = client["Nom"];
-            document.getElementById("prenom").textContent = client["Prénom"];
-            document.getElementById("idClient").textContent = client["ID Client"];
-            document.getElementById("points").textContent = client["Total Points"];
-            document.getElementById("montant").textContent = client["Montant Cumulé"];
+    fetch("https://opensheet.elk.sh/1s0iVzJkXSCcnJ7itvwtheTw9cdf35LxWbQ31Zuu9IXE/Réponses Formulaire")
+      .then(res => res.json())
+      .then(data => {
+        const client = data.find(row => row["ID Client"] === id);
 
-            // Générer le QR Code avec l'URL actuelle
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=https://zak213dz.github.io/oni-fid/carte.html?id=${id}&size=150x150`;
-            document.getElementById("qr").src = qrUrl;
-          } else {
-            document.getElementById("carte").innerHTML = "<p style='color:red;'>Client introuvable.</p>";
-          }
-        })
-        .catch(error => {
-          document.getElementById("carte").innerHTML = "<p style='color:red;'>Erreur de chargement des données.</p>";
+        if (!client) {
+          document.body.innerHTML = "<h2 style='color:red;'>Client introuvable.</h2>";
+          return;
+        }
+
+        document.getElementById("nom").textContent = "Nom : " + client["Nom"];
+        document.getElementById("prenom").textContent = "Prénom : " + client["Prénom"];
+        document.getElementById("points").textContent = "Total Points : " + (client["Total Points"] || 0);
+        document.getElementById("montant").textContent = "Montant cumulé : " + (client["Montant Cumulé"] || 0) + " €";
+
+        const lienCarte = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}`;
+        QRCode.toCanvas(document.getElementById("qrcode"), lienCarte, { width: 150 }, function (error) {
+          if (error) console.error(error);
         });
-    }
+      });
   </script>
 </body>
 </html>
