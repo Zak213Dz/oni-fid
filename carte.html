@@ -7,13 +7,14 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding-top: 40px;
+      margin-top: 60px;
     }
-    .card {
+    .carte {
+      border: 1px solid #ccc;
       display: inline-block;
-      padding: 25px;
+      padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px #ccc;
     }
     .qr-code {
       margin-top: 20px;
@@ -21,39 +22,45 @@
   </style>
 </head>
 <body>
-  <div class="card">
+  <div class="carte">
     <h2>Carte de Fidélité</h2>
-    <p id="nom">Nom :</p>
-    <p id="prenom">Prénom :</p>
-    <p id="points">Total Points :</p>
-    <p id="montant">Montant cumulé :</p>
-    <div class="qr-code" id="qrcode"></div>
+    <p id="nom">Nom : </p>
+    <p id="prenom">Prénom : </p>
+    <p id="points">Total Points : </p>
+    <p id="montant">Montant cumulé : </p>
+    <div class="qr-code">
+      <img id="qrCode" src="" alt="QR Code">
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
 
-    fetch("https://opensheet.elk.sh/1s0iVzJkXSCcnJ7itvwtheTw9cdf35LxWbQ31Zuu9IXE/Réponses Formulaire")
-      .then(res => res.json())
-      .then(data => {
-        const client = data.find(row => row["ID Client"] === id);
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?output=csv")
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.split("\n").map(row => row.split(","));
+        const headers = rows[0];
+        const idIndex = headers.indexOf("ID Client");
+        const nomIndex = headers.indexOf("Nom");
+        const prenomIndex = headers.indexOf("Prénom");
+        const pointsIndex = headers.indexOf("Total Points");
+        const montantIndex = headers.indexOf("Montant Cumulé");
 
-        if (!client) {
-          document.body.innerHTML = "<h2 style='color:red;'>Client introuvable.</h2>";
-          return;
+        const client = rows.find(row => row[idIndex]?.trim() === id);
+        if (client) {
+          document.getElementById("nom").textContent = "Nom : " + client[nomIndex];
+          document.getElementById("prenom").textContent = "Prénom : " + client[prenomIndex];
+          document.getElementById("points").textContent = "Total Points : " + client[pointsIndex];
+          document.getElementById("montant").textContent = "Montant cumulé : " + client[montantIndex] + " €";
+          
+          // Générer le QR code avec l'URL actuelle
+          const url = window.location.href;
+          document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+        } else {
+          document.querySelector(".carte").innerHTML = "<h2>Client introuvable</h2>";
         }
-
-        document.getElementById("nom").textContent = "Nom : " + client["Nom"];
-        document.getElementById("prenom").textContent = "Prénom : " + client["Prénom"];
-        document.getElementById("points").textContent = "Total Points : " + (client["Total Points"] || 0);
-        document.getElementById("montant").textContent = "Montant cumulé : " + (client["Montant Cumulé"] || 0) + " €";
-
-        const lienCarte = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}`;
-        QRCode.toCanvas(document.getElementById("qrcode"), lienCarte, { width: 150 }, function (error) {
-          if (error) console.error(error);
-        });
       });
   </script>
 </body>
