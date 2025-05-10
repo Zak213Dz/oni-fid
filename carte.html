@@ -1,71 +1,77 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Carte de fidélité</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f4f4f4;
       text-align: center;
+      padding: 30px;
+      background-color: #f5f5f5;
     }
     .card {
       background: white;
-      padding: 1.5rem;
-      border-radius: 8px;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      display: inline-block;
-      min-width: 300px;
     }
-    .notfound {
+    h1 {
+      margin-top: 0;
+    }
+    .info {
+      margin: 10px 0;
+    }
+    .error {
       color: red;
       font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="card" id="carte"></div>
+  <div class="card" id="carte">
+    <h1>Carte de Fidélité</h1>
+    <div class="info" id="nom"></div>
+    <div class="info" id="prenom"></div>
+    <div class="info" id="points"></div>
+    <div class="info" id="montant"></div>
+    <div class="error" id="erreur"></div>
+  </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
 
-    async function chargerDonnees() {
-      const reponse = await fetch("clients.csv");
-      const texte = await reponse.text();
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?output=csv")
+      .then(response => response.text())
+      .then(data => {
+        const lignes = data.split("\n").map(row => row.split(","));
+        const headers = lignes[0];
+        const idIndex = headers.indexOf("ID Client");
 
-      const lignes = texte.trim().split("\n");
-      const entetes = lignes[0].split(",");
-      
-      const clients = lignes.slice(1).map(ligne => {
-        const valeurs = ligne.split(",");
-        const client = {};
-        entetes.forEach((cle, i) => {
-          client[cle.trim()] = valeurs[i]?.trim();
-        });
-        return client;
+        const ligneClient = lignes.find(ligne => ligne[idIndex] === id);
+
+        if (ligneClient) {
+          const obj = {};
+          headers.forEach((h, i) => {
+            obj[h.trim()] = ligneClient[i].trim();
+          });
+
+          document.getElementById("nom").textContent = "Nom : " + obj["Nom"];
+          document.getElementById("prenom").textContent = "Prénom : " + obj["Prénom"];
+          document.getElementById("points").textContent = "Total Points : " + obj["Total points"];
+          document.getElementById("montant").textContent = "Montant cumulé : " + obj["Montant cumulé"] + " €";
+        } else {
+          document.getElementById("erreur").textContent = "Client introuvable.";
+        }
+      })
+      .catch(error => {
+        document.getElementById("erreur").textContent = "Erreur de chargement des données.";
+        console.error(error);
       });
-
-      const clientTrouve = clients.find(c => c["ID Client"] === id);
-
-      const carte = document.getElementById("carte");
-      if (clientTrouve) {
-        carte.innerHTML = `
-          <h2>Carte de fidélité</h2>
-          <p><strong>Nom :</strong> ${clientTrouve["Nom"] || ""} ${clientTrouve["Prénom"] || ""}</p>
-          <p><strong>ID Client :</strong> ${clientTrouve["ID Client"]}</p>
-          <p><strong>Téléphone :</strong> ${clientTrouve["Téléphone"]}</p>
-          <p><strong>Total Points :</strong> ${clientTrouve["Total Points"]}</p>
-          <p><strong>Montant cumulé :</strong> ${clientTrouve["Montant Cumulé"]} €</p>
-        `;
-      } else {
-        carte.innerHTML = `<p class="notfound">Client introuvable.</p>`;
-      }
-    }
-
-    chargerDonnees();
   </script>
 </body>
 </html>
