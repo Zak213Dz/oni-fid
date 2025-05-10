@@ -1,77 +1,78 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Carte de fidélité</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carte de Fidélité</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      padding: 40px;
       text-align: center;
-      padding: 30px;
-      background-color: #f5f5f5;
     }
-    .card {
-      background: white;
+    .carte {
+      background-color: white;
+      padding: 25px;
       border-radius: 10px;
-      padding: 20px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
       max-width: 400px;
       margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h1 {
-      margin-top: 0;
+    h2 {
+      margin-bottom: 20px;
     }
-    .info {
-      margin: 10px 0;
+    p {
+      font-size: 16px;
+      margin: 8px 0;
     }
-    .error {
-      color: red;
-      font-weight: bold;
+    .qr-code {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="card" id="carte">
-    <h1>Carte de Fidélité</h1>
-    <div class="info" id="nom"></div>
-    <div class="info" id="prenom"></div>
-    <div class="info" id="points"></div>
-    <div class="info" id="montant"></div>
-    <div class="error" id="erreur"></div>
+  <div class="carte" id="carte">
+    <h2>Carte de Fidélité</h2>
+    <p><strong>Nom :</strong> <span id="nom"></span></p>
+    <p><strong>Prénom :</strong> <span id="prenom"></span></p>
+    <p><strong>ID Client :</strong> <span id="idClient"></span></p>
+    <p><strong>Total Points :</strong> <span id="points"></span></p>
+    <p><strong>Montant cumulé :</strong> <span id="montant"></span> €</p>
+    <div class="qr-code">
+      <img id="qr" src="" alt="QR Code">
+    </div>
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get("id");
 
-    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?output=csv")
-      .then(response => response.text())
-      .then(data => {
-        const lignes = data.split("\n").map(row => row.split(","));
-        const headers = lignes[0];
-        const idIndex = headers.indexOf("ID Client");
+    if (!id) {
+      document.getElementById("carte").innerHTML = "<p style='color:red;'>Client introuvable.</p>";
+    } else {
+      fetch("https://opensheet.elk.sh/1s0iVzJkXSCcnJ7itvwtheTw9cdf35LxWbQ31Zuu9IXE/Réponses Formulaire")
+        .then(response => response.json())
+        .then(data => {
+          const client = data.find(row => row["ID Client"] === id);
+          if (client) {
+            document.getElementById("nom").textContent = client["Nom"];
+            document.getElementById("prenom").textContent = client["Prénom"];
+            document.getElementById("idClient").textContent = client["ID Client"];
+            document.getElementById("points").textContent = client["Total Points"];
+            document.getElementById("montant").textContent = client["Montant Cumulé"];
 
-        const ligneClient = lignes.find(ligne => ligne[idIndex] === id);
-
-        if (ligneClient) {
-          const obj = {};
-          headers.forEach((h, i) => {
-            obj[h.trim()] = ligneClient[i].trim();
-          });
-
-          document.getElementById("nom").textContent = "Nom : " + obj["Nom"];
-          document.getElementById("prenom").textContent = "Prénom : " + obj["Prénom"];
-          document.getElementById("points").textContent = "Total Points : " + obj["Total points"];
-          document.getElementById("montant").textContent = "Montant cumulé : " + obj["Montant cumulé"] + " €";
-        } else {
-          document.getElementById("erreur").textContent = "Client introuvable.";
-        }
-      })
-      .catch(error => {
-        document.getElementById("erreur").textContent = "Erreur de chargement des données.";
-        console.error(error);
-      });
+            // Générer le QR Code avec l'URL actuelle
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=https://zak213dz.github.io/oni-fid/carte.html?id=${id}&size=150x150`;
+            document.getElementById("qr").src = qrUrl;
+          } else {
+            document.getElementById("carte").innerHTML = "<p style='color:red;'>Client introuvable.</p>";
+          }
+        })
+        .catch(error => {
+          document.getElementById("carte").innerHTML = "<p style='color:red;'>Erreur de chargement des données.</p>";
+        });
+    }
   </script>
 </body>
 </html>
