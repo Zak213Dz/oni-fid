@@ -13,11 +13,13 @@
     form {
       display: inline-block;
       text-align: left;
+      max-width: 300px;
     }
     input[type="text"], input[type="tel"] {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       margin: 8px 0;
+      box-sizing: border-box;
     }
     input[type="submit"] {
       background-color: black;
@@ -44,18 +46,20 @@
       e.preventDefault();
 
       const formData = new FormData(form);
-      const data = new URLSearchParams();
-      for (const pair of formData) {
-        data.append(pair[0], pair[1]);
+      const params = new URLSearchParams();
+
+      for (const pair of formData.entries()) {
+        params.append(pair[0], pair[1]);
       }
 
-      fetch("https://script.google.com/macros/s/AKfycbw2a3aXAVRdjwjsFRuS5uKpQziCEFyOoSvkvC9rad_Ar7cQqa5SqK554OQzom6GXeD8/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbxVCSKg4Qmqam0MD3at6QvRMB0k1TFPfPGBY1DWL45Fit0mbkYusyXVgRNwWI7nNqXD3w/exec", {
         method: "POST",
-        body: data
+        body: params
       })
       .then(response => response.text())
-      .then(id => {
-        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}`;
+      .then(idClient => {
+        // Redirection vers la carte avec l'ID généré
+        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${idClient}`;
       })
       .catch(error => {
         alert("Une erreur est survenue : " + error);
