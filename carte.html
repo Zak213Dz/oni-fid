@@ -52,15 +52,16 @@
         if (client) {
           document.getElementById("nom").textContent = "Nom : " + client[nomIndex];
           document.getElementById("prenom").textContent = "Prénom : " + client[prenomIndex];
-          document.getElementById("points").textContent = "Total Points : " + client[pointsIndex];
-          document.getElementById("montant").textContent = "Montant cumulé : " + client[montantIndex] + " €";
-          
-          // Générer le QR code avec l'URL actuelle
-          const url = window.location.href;
-          document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+          document.getElementById("points").textContent = "Total Points : " + (client[pointsIndex] || 0);
+          document.getElementById("montant").textContent = "Montant cumulé : " + (client[montantIndex] || 0) + " €";
+          document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.href)}`;
         } else {
           document.querySelector(".carte").innerHTML = "<h2>Client introuvable</h2>";
         }
+      })
+      .catch(error => {
+        console.error("Erreur lors de la récupération du CSV :", error);
+        document.querySelector(".carte").innerHTML = "<h2>Erreur lors de la récupération</h2>";
       });
   </script>
 </body>
