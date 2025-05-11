@@ -1,32 +1,98 @@
 <!DOCTYPE html>
-<html>
-  <body style="background:black; color:white; font-family:sans-serif;">
-    <h1>Test Lecture Données</h1>
-    <div id="resultat">Chargement...</div>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Carte de fidélité</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .logo img {
+      width: 60px;
+    }
+    .infos {
+      margin-top: 20px;
+    }
+    .carte {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      max-width: 220px;
+      margin: 10px auto;
+    }
+    .case {
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      border-radius: 5px;
+    }
+    .rempli img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .qr img {
+      margin-top: 15px;
+      width: 120px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo"><img src="https://i.ibb.co/BrBKVv7/logo.png" alt="logo"></div>
+  <div class="infos">
+    <div><strong>Nom :</strong> <span id="nom"></span></div>
+    <div><strong>Prénom :</strong> <span id="prenom"></span></div>
+    <div><strong>ID :</strong> <span id="id"></span></div>
+    <div><strong>Montant cumulé :</strong> <span id="montant"></span> €</div>
+    <div><strong>Menus offerts :</strong> <span id="menus"></span></div>
+  </div>
+  <div class="carte" id="cases"></div>
+  <div class="qr"><img id="qr" src="" alt="QR Code"></div>
 
-    <script>
-      const id = new URLSearchParams(window.location.search).get('id');
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get("id");
 
-      fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQOJ_jaEkUYtPc-RPRIVNTBvlPJ8mqszt7hnPWFSN-iTNvE9pWH00RoVlBEF2JrqktYzWLMu0s/pub?gid=1144651952&single=true&output=csv")
-        .then(res => res.text())
-        .then(csv => {
-          const rows = csv.split("\n").map(r => r.split(","));
-          const client = rows.find(row => row[4] === id);
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQOJ_kaEUYtPc-RPRIVNTBvIPJ8mqsz7hnPWFSNI-9TlnvE9pWHO0RvoBIEF2JrkqtYzWLMu0s/pub?gid=1144651952&single=true&output=csv")
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.split('\n').map(r => r.split(','));
+        const headers = rows[0];
+        const idIndex = headers.indexOf("ID Client");
+        const client = rows.find(row => row[idIndex] === clientId);
 
-          if (!client) {
-            document.getElementById("resultat").innerHTML = "Client introuvable";
-            return;
+        if (!client) {
+          document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
+          return;
+        }
+
+        document.getElementById("nom").textContent = client[headers.indexOf("Nom")];
+        document.getElementById("prenom").textContent = client[headers.indexOf("Prénom")];
+        document.getElementById("id").textContent = clientId;
+        document.getElementById("montant").textContent = parseFloat(client[headers.indexOf("Montant Cumulé")]).toFixed(2);
+        document.getElementById("menus").textContent = client[headers.indexOf("Menus offerts")];
+
+        const points = parseInt(client[headers.indexOf("Total Points")]) || 0;
+        const casesDiv = document.getElementById("cases");
+        for (let i = 0; i < 10; i++) {
+          const div = document.createElement("div");
+          div.className = "case" + (i < points ? " rempli" : "");
+          if (i < points) {
+            const img = document.createElement("img");
+            img.src = "https://i.ibb.co/BrBKVv7/logo.png";
+            div.appendChild(img);
           }
+          casesDiv.appendChild(div);
+        }
 
-          document.getElementById("resultat").innerHTML = `
-            Nom : ${client[0]}<br>
-            Prénom : ${client[1]}<br>
-            ID : ${client[4]}<br>
-            Points : ${client[5]}<br>
-            Montant : ${client[6]}<br>
-            Menus : ${client[8]}
-          `;
-        });
-    </script>
-  </body>
+        const qr = document.getElementById("qr");
+        qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
+      });
+  </script>
+</body>
 </html>
