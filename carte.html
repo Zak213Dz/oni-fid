@@ -59,7 +59,8 @@
     const urlParams = new URLSearchParams(window.location.search);
     const clientId = urlParams.get('id');
 
-    fetch("https://docs.google.com/spreadsheets/d/1s0iVzJkXSCcnJ7itvwtheTw9cdf35LxWbQ3lZuu9IXE/gviz/tq?tqx=out:json")
+    fetch("https://docs.google.com/spreadsheets/d/1s0iVzJkXSCcnJ7itvwtheTw9cdf35LxWbQ3lZuu9IXE/gviz/tq?tqx=out:csv&sheet=Réponses%20Formulaire
+")
       .then(res => res.text())
       .then(data => {
         const json = JSON.parse(data.substring(47).slice(0, -2));
