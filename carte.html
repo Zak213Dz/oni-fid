@@ -5,7 +5,7 @@
   <title>Carte de fidélité</title>
   <style>
     body {
-      background: #111;
+      background-color: #111;
       color: white;
       font-family: sans-serif;
       text-align: center;
@@ -13,85 +13,99 @@
     }
     .logo img {
       width: 60px;
+      margin-bottom: 10px;
     }
-    .infos {
-      margin-top: 20px;
+    .carte-container {
+      max-width: 300px;
+      margin: auto;
+      background-color: #222;
+      padding: 20px;
+      border-radius: 12px;
     }
-    .carte {
-      display: flex;
-      flex-wrap: wrap;
+    .info {
+      margin: 10px 0;
+    }
+    .cases {
+      display: grid;
+      grid-template-columns: repeat(5, 40px);
+      grid-gap: 8px;
       justify-content: center;
-      gap: 5px;
-      max-width: 220px;
-      margin: 10px auto;
+      margin: 20px 0;
     }
     .case {
       width: 40px;
       height: 40px;
-      background: #fff;
-      border-radius: 5px;
+      background-color: white;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .rempli img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+    .case img {
+      width: 24px;
+      height: 24px;
     }
-    .qr img {
-      margin-top: 15px;
-      width: 120px;
+    .qr {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="logo"><img src="https://i.ibb.co/BrBKVv7/logo.png" alt="logo"></div>
-  <div class="infos">
-    <div><strong>Nom :</strong> <span id="nom"></span></div>
-    <div><strong>Prénom :</strong> <span id="prenom"></span></div>
-    <div><strong>ID :</strong> <span id="id"></span></div>
-    <div><strong>Montant cumulé :</strong> <span id="montant"></span> €</div>
-    <div><strong>Menus offerts :</strong> <span id="menus"></span></div>
+  <div class="carte-container">
+    <div class="logo">
+      <img src="https://zak213dz.github.io/oni-fid/logo-blanc.png" alt="logo blanc">
+    </div>
+    <div class="info"><strong>ID :</strong> <span id="id"></span></div>
+    <div class="info"><strong>Nom :</strong> <span id="nom"></span></div>
+    <div class="info"><strong>Prénom :</strong> <span id="prenom"></span></div>
+    <div class="cases" id="cases"></div>
+    <div class="info"><strong>Montant cumulé :</strong> <span id="montant"></span> €</div>
+    <div class="info"><strong>Menus offerts :</strong> <span id="menus"></span></div>
+    <div class="qr"><img id="qr" src="" alt="QR Code"></div>
   </div>
-  <div class="carte" id="cases"></div>
-  <div class="qr"><img id="qr" src="" alt="QR Code"></div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const clientId = urlParams.get("id");
+    const clientId = urlParams.get('id');
 
-    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1721109896&single=true&output=csv")
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQOJ_jaEkUYtPc-RPRIVNTBvlPJ8mqszt7hnPWFSNl-9T1Nye9pWHO0KRvoBlEF2JrkqtYzWLMU0s/pub?gid=1144651952&single=true&output=csv")
       .then(res => res.text())
-      .then(text => {
-        const rows = text.split('\n').map(r => r.split(','));
-        const headers = rows[0];
+      .then(csv => {
+        const rows = csv.split("\n").map(r => r.split(","));
+        const headers = rows.shift();
         const idIndex = headers.indexOf("ID Client");
-        const client = rows.find(row => row[idIndex] === clientId);
 
-        if (!client) {
+        const row = rows.find(r => r[idIndex] === clientId);
+        if (!row) {
           document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
           return;
         }
 
-        document.getElementById("nom").textContent = client[headers.indexOf("Nom")];
-        document.getElementById("prenom").textContent = client[headers.indexOf("Prénom")];
-        document.getElementById("id").textContent = clientId;
-        document.getElementById("montant").textContent = parseFloat(client[headers.indexOf("Montant Cumulé")]).toFixed(2);
-        document.getElementById("menus").textContent = client[headers.indexOf("Menus offerts")];
+        const nom = row[1];
+        const prenom = row[2];
+        const montant = parseFloat(row[5] || 0).toFixed(2);
+        const menus = parseInt(row[6] || 0);
 
-        const points = parseInt(client[headers.indexOf("Total Points")]) || 0;
-        const casesDiv = document.getElementById("cases");
+        document.getElementById("id").textContent = clientId;
+        document.getElementById("nom").textContent = nom;
+        document.getElementById("prenom").textContent = prenom;
+        document.getElementById("montant").textContent = montant;
+        document.getElementById("menus").textContent = menus;
+
+        const casesContainer = document.getElementById("cases");
         for (let i = 0; i < 10; i++) {
           const div = document.createElement("div");
-          div.className = "case" + (i < points ? " rempli" : "");
-          if (i < points) {
+          div.className = "case";
+          if (i < menus) {
             const img = document.createElement("img");
-            img.src = "https://i.ibb.co/BrBKVv7/logo.png";
+            img.src = "https://zak213dz.github.io/oni-fid/logo-noir.png";
             div.appendChild(img);
           }
-          casesDiv.appendChild(div);
+          casesContainer.appendChild(div);
         }
 
-        const qr = document.getElementById("qr");
-        qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
+        const qrCode = document.getElementById("qr");
+        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
       });
   </script>
 </body>
