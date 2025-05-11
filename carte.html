@@ -68,7 +68,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const clientId = urlParams.get('id');
 
-    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQOJ_jaEkUYtPc-RPRIVNTBvlPJ8mqszt7hnPWFSNl-9T1Nye9pWHO0KRvoBlEF2JrkqtYzWLMU0s/pub?gid=1144651952&single=true&output=csv")
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1721109896&single=true&output=csv")
       .then(res => res.text())
       .then(csv => {
         const rows = csv.split("\n").map(r => r.split(","));
