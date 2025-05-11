@@ -5,63 +5,99 @@
   <title>Carte de Fidélité</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      font-family: sans-serif;
       text-align: center;
-      margin-top: 60px;
+      padding: 20px;
+    }
+    .logo {
+      margin-top: 10px;
+    }
+    .infos {
+      margin: 20px 0;
+      font-size: 18px;
     }
     .carte {
-      border: 1px solid #ccc;
-      display: inline-block;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #ccc;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      max-width: 240px;
+      margin: 20px auto;
     }
-    .qr-code {
-      margin-top: 20px;
+    .case {
+      width: 50px;
+      height: 50px;
+      background: white;
+      border-radius: 5px;
+    }
+    .rempli img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .qr img {
+      margin-top: 15px;
+      width: 120px;
     }
   </style>
 </head>
 <body>
-  <div class="carte">
-    <h2>Carte de Fidélité</h2>
-    <p id="nom">Nom : </p>
-    <p id="prenom">Prénom : </p>
-    <p id="points">Total Points : </p>
-    <p id="montant">Montant cumulé : </p>
-    <div class="qr-code">
-      <img id="qrCode" src="" alt="QR Code">
-    </div>
+  <div class="logo"><img src="https://i.ibb.co/BrBkKV7/logo.png" width="60"></div>
+  <div class="infos">
+    <div><strong>Nom :</strong> <span id="nom"></span></div>
+    <div><strong>Prénom :</strong> <span id="prenom"></span></div>
+    <div><strong>ID :</strong> <span id="idClient"></span></div>
+    <div><strong>Montant cumulé :</strong> <span id="montant"></span> €</div>
+    <div><strong>Menus offerts :</strong> <span id="menus"></span></div>
   </div>
+  <div class="carte" id="cases"></div>
+  <div class="qr"><img id="qr" src=""></div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('id');
 
-    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?output=csv")
+    fetch("https://docs.google.com/spreadsheets/d/1s0iVzJkXSCcnJ7itvwtheTw9cdf35LxWbQ3lZuu9IXE/gviz/tq?tqx=out:json")
       .then(res => res.text())
-      .then(text => {
-        const rows = text.split("\n").map(row => row.split(","));
-        const headers = rows[0];
-        const idIndex = headers.indexOf("ID Client");
-        const nomIndex = headers.indexOf("Nom");
-        const prenomIndex = headers.indexOf("Prénom");
-        const pointsIndex = headers.indexOf("Total Points");
-        const montantIndex = headers.indexOf("Montant Cumulé");
+      .then(data => {
+        const json = JSON.parse(data.substring(47).slice(0, -2));
+        const rows = json.table.rows;
 
-        const client = rows.find(row => row[idIndex]?.trim() === id);
-        if (client) {
-          document.getElementById("nom").textContent = "Nom : " + client[nomIndex];
-          document.getElementById("prenom").textContent = "Prénom : " + client[prenomIndex];
-          document.getElementById("points").textContent = "Total Points : " + (client[pointsIndex] || 0);
-          document.getElementById("montant").textContent = "Montant cumulé : " + (client[montantIndex] || 0) + " €";
-          document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.href)}`;
-        } else {
-          document.querySelector(".carte").innerHTML = "<h2>Client introuvable</h2>";
+        const client = rows.find(r => r.c[4] && r.c[4].v === clientId);
+        if (!client) {
+          document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
+          return;
         }
-      })
-      .catch(error => {
-        console.error("Erreur lors de la récupération du CSV :", error);
-        document.querySelector(".carte").innerHTML = "<h2>Erreur lors de la récupération</h2>";
+
+        const nom = client.c[0]?.v || "";
+        const prenom = client.c[1]?.v || "";
+        const tel = client.c[2]?.v || "";
+        const points = parseInt(client.c[5]?.v || 0);
+        const montant = parseFloat(client.c[6]?.v || 0).toFixed(2);
+        const menus = parseInt(client.c[8]?.v || 0);
+
+        document.getElementById("nom").textContent = nom;
+        document.getElementById("prenom").textContent = prenom;
+        document.getElementById("idClient").textContent = clientId;
+        document.getElementById("montant").textContent = montant;
+        document.getElementById("menus").textContent = menus;
+
+        const container = document.getElementById("cases");
+        for (let i = 0; i < 10; i++) {
+          const div = document.createElement("div");
+          div.className = "case" + (i < points ? " rempli" : "");
+          if (i < points) {
+            const img = document.createElement("img");
+            img.src = "https://i.ibb.co/BrBkKV7/logo.png";
+            div.appendChild(img);
+          }
+          container.appendChild(div);
+        }
+
+        const qr = document.getElementById("qr");
+        qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
       });
   </script>
 </body>
