@@ -12,10 +12,10 @@
       padding: 20px;
     }
     .logo {
-      margin-top: 10px;
+      margin-bottom: 10px;
     }
     .infos {
-      margin: 20px 0;
+      margin: 10px 0;
       font-size: 18px;
     }
     .carte {
@@ -23,8 +23,8 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 5px;
-      max-width: 240px;
-      margin: 20px auto;
+      max-width: 220px;
+      margin: 10px auto;
     }
     .case {
       width: 50px;
@@ -44,7 +44,10 @@
   </style>
 </head>
 <body>
-  <div class="logo"><img src="https://i.ibb.co/BrBkKV7/logo.png" width="60"></div>
+  <div class="logo">
+    <img src="https://i.ibb.co/BrBkKV7/logo.png" width="60" />
+  </div>
+
   <div class="infos">
     <div><strong>Nom :</strong> <span id="nom"></span></div>
     <div><strong>Prénom :</strong> <span id="prenom"></span></div>
@@ -52,53 +55,57 @@
     <div><strong>Montant cumulé :</strong> <span id="montant"></span> €</div>
     <div><strong>Menus offerts :</strong> <span id="menus"></span></div>
   </div>
+
   <div class="carte" id="cases"></div>
-  <div class="qr"><img id="qr" src=""></div>
+
+  <div class="qr">
+    <img id="qr" src="" />
+  </div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const clientId = urlParams.get('id');
 
-    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1144651952&single=true&output=csv
-")
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQOJ_jaEkUYtPc-RPRIVNTBvlPJ8mqszt7hnPWFSN-iTNvE9pWH00RoVlBEF2JrqktYzWLMu0s/pub?gid=1144651952&single=true&output=csv")
       .then(res => res.text())
-      .then(data => {
-        const json = JSON.parse(data.substring(47).slice(0, -2));
-        const rows = json.table.rows;
+      .then(csv => {
+        const rows = csv.split("\n").slice(1).map(row => row.split(","));
+        const client = rows.find(row => row[4] === clientId);
 
-        const client = rows.find(r => r.c[4] && r.c[4].v === clientId);
         if (!client) {
           document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
           return;
         }
 
-        const nom = client.c[0]?.v || "";
-        const prenom = client.c[1]?.v || "";
-        const tel = client.c[2]?.v || "";
-        const points = parseInt(client.c[5]?.v || 0);
-        const montant = parseFloat(client.c[6]?.v || 0).toFixed(2);
-        const menus = parseInt(client.c[8]?.v || 0);
+        const nom = client[0];
+        const prenom = client[1];
+        const id = client[4];
+        const points = parseInt(client[5]) || 0;
+        const montant = parseFloat(client[6]) || 0;
+        const menus = client[8] || 0;
 
         document.getElementById("nom").textContent = nom;
         document.getElementById("prenom").textContent = prenom;
-        document.getElementById("idClient").textContent = clientId;
-        document.getElementById("montant").textContent = montant;
+        document.getElementById("idClient").textContent = id;
+        document.getElementById("montant").textContent = montant.toFixed(2);
         document.getElementById("menus").textContent = menus;
 
-        const container = document.getElementById("cases");
+        // Ajout des carrés
+        const casesContainer = document.getElementById("cases");
         for (let i = 0; i < 10; i++) {
           const div = document.createElement("div");
           div.className = "case" + (i < points ? " rempli" : "");
           if (i < points) {
             const img = document.createElement("img");
-            img.src = "https://i.ibb.co/BrBkKV7/logo.png";
+            img.src = "https://i.ibb.co/BrBkKV7/logo.png"; // logo rempli
             div.appendChild(img);
           }
-          container.appendChild(div);
+          casesContainer.appendChild(div);
         }
 
+        // QR Code
         const qr = document.getElementById("qr");
-        qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
+        qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://zak213dz.github.io/oni-fid/carte.html?id=${id}`;
       });
   </script>
 </body>
