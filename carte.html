@@ -78,5 +78,41 @@
       .then(csv => {
         const rows = csv.split("\n").map(row => row.split(","));
         const headers = rows[0];
-        const data =
+        const data = rows.slice(1);
+        const client = data.find(row => row[3] === id);
 
+        if (!client) {
+          document.getElementById("info").innerHTML = "<p>Client introuvable</p>";
+          return;
+        }
+
+        const nom = client[0];
+        const prenom = client[1];
+        const tel = client[2];
+        const idClient = client[3];
+        const totalPoints = parseInt(client[4]) || 0;
+        const montantCumulé = parseFloat(client[5]) || 0;
+        const menusOfferts = parseInt(client[7]) || 0;
+
+        document.getElementById("info").innerHTML = `
+          <p><span class="bold">ID :</span> ${idClient}</p>
+          <p><span class="bold">Nom :</span> ${nom}</p>
+          <p><span class="bold">Prénom :</span> ${prenom}</p>
+        `;
+
+        // Affichage des carrés
+        const pointsDiv = document.getElementById("points");
+        pointsDiv.innerHTML = "";
+        for (let i = 0; i < 10; i++) {
+          const div = document.createElement("div");
+          div.className = "square" + (i < totalPoints ? " barré" : "");
+          pointsDiv.appendChild(div);
+        }
+
+        document.getElementById("montant").textContent = montantCumulé.toFixed(2);
+        document.getElementById("menus").textContent = menusOfferts;
+        document.getElementById("qr").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?id=${idClient}`;
+      });
+  </script>
+</body>
+</html>
