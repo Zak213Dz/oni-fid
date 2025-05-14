@@ -7,9 +7,13 @@
     body {
       background-color: #111;
       color: white;
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       text-align: center;
       padding: 20px;
+    }
+    .logo img {
+      width: 140px;
+      margin-bottom: 15px;
     }
     .carte-container {
       max-width: 320px;
@@ -18,12 +22,8 @@
       padding: 20px;
       border-radius: 12px;
     }
-    .logo img {
-      width: 120px;
-      margin-bottom: 10px;
-    }
     .info {
-      margin: 6px 0;
+      margin: 10px 0;
     }
     .cases {
       display: grid;
@@ -39,14 +39,15 @@
       border-radius: 6px;
       position: relative;
     }
-    .barre-noire {
+    .case.filled::after {
+      content: "";
       position: absolute;
-      width: 100%;
-      height: 2px;
-      background-color: black;
+      top: 4px;
+      left: 4px;
+      width: 32px;
+      height: 32px;
+      border-top: 3px solid black;
       transform: rotate(45deg);
-      top: 50%;
-      left: 0;
     }
     .qr {
       margin-top: 20px;
@@ -56,7 +57,7 @@
 <body>
   <div class="carte-container">
     <div class="logo">
-      <img src="https://zak213dz.github.io/oni-fid/logo-blanc.png" alt="Logo">
+      <img src="https://zak213dz.github.io/oni-fid/logo-blanc.png" alt="logo blanc">
     </div>
     <div class="info"><strong>ID :</strong> <span id="id"></span></div>
     <div class="info"><strong>Nom :</strong> <span id="nom"></span></div>
@@ -74,7 +75,7 @@
     fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1721109896&single=true&output=csv")
       .then(res => res.text())
       .then(csv => {
-        const rows = csv.trim().split("\n").map(r => r.split(","));
+        const rows = csv.split("\n").map(r => r.split(","));
         const headers = rows.shift();
         const idIndex = headers.indexOf("ID Client");
 
@@ -86,25 +87,20 @@
 
         const nom = row[1];
         const prenom = row[2];
-        const points = parseInt(row[5]) || 0;
-        const montant = parseFloat(row[6]) || 0;
-        const menus = parseInt(row[8]) || 0;
+        const points = parseInt(row[5] || 0);
+        const montant = parseFloat(row[6] || 0).toFixed(2);
+        const menus = parseInt(row[8] || 0);
 
         document.getElementById("id").textContent = clientId;
         document.getElementById("nom").textContent = nom;
         document.getElementById("prenom").textContent = prenom;
-        document.getElementById("montant").textContent = montant.toFixed(2);
+        document.getElementById("montant").textContent = montant;
         document.getElementById("menus").textContent = menus;
 
         const casesContainer = document.getElementById("cases");
         for (let i = 0; i < 10; i++) {
           const div = document.createElement("div");
-          div.className = "case";
-          if (i < points) {
-            const barre = document.createElement("div");
-            barre.className = "barre-noire";
-            div.appendChild(barre);
-          }
+          div.className = "case" + (i < points ? " filled" : "");
           casesContainer.appendChild(div);
         }
 
