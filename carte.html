@@ -78,7 +78,7 @@
       .then(csv => {
         const rows = csv.split("\n").map(r => r.split(","));
         const headers = rows.shift();
-        const idIndex = headers.indexOf("ID Client");
+        const idIndex = 4; // ID Client
 
         const row = rows.find(r => r[idIndex] === clientId);
         if (!row) {
@@ -86,11 +86,11 @@
           return;
         }
 
-        const nom = row[headers.indexOf("Nom")];
-        const prenom = row[headers.indexOf("Prénom")];
-        const points = parseInt(row[headers.indexOf("Total Points")]) || 0;
-        const montant = parseFloat(row[headers.indexOf("Montant Cumulé")]) || 0;
-        const menus = parseInt(row[headers.indexOf("Menus offerts")]) || 0;
+        const nom = row[1];
+        const prenom = row[2];
+        const points = parseInt(row[5]) || 0;
+        const montant = parseFloat(row[6]) || 0;
+        const menus = parseInt(row[8]) || 0;
 
         document.getElementById("id").textContent = clientId;
         document.getElementById("nom").textContent = nom;
