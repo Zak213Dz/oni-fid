@@ -7,23 +7,23 @@
     body {
       background-color: #111;
       color: white;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
       padding: 20px;
     }
     .carte-container {
-      max-width: 300px;
+      max-width: 320px;
       margin: auto;
       background-color: #222;
       padding: 20px;
       border-radius: 12px;
     }
     .logo img {
-      width: 90px;
-      margin-bottom: 15px;
+      width: 120px;
+      margin-bottom: 10px;
     }
     .info {
-      margin: 10px 0;
+      margin: 6px 0;
     }
     .cases {
       display: grid;
@@ -40,14 +40,13 @@
       position: relative;
     }
     .barre-noire {
-      content: '';
       position: absolute;
-      width: 2px;
-      height: 56px;
-      background: black;
-      transform: rotate(-45deg);
-      top: -8px;
-      left: 19px;
+      width: 100%;
+      height: 2px;
+      background-color: black;
+      transform: rotate(45deg);
+      top: 50%;
+      left: 0;
     }
     .qr {
       margin-top: 20px;
@@ -57,7 +56,7 @@
 <body>
   <div class="carte-container">
     <div class="logo">
-      <img src="https://zak213dz.github.io/oni-fid/logo-blanc.png" alt="logo blanc">
+      <img src="https://zak213dz.github.io/oni-fid/logo-blanc.png" alt="Logo">
     </div>
     <div class="info"><strong>ID :</strong> <span id="id"></span></div>
     <div class="info"><strong>Nom :</strong> <span id="nom"></span></div>
@@ -75,7 +74,7 @@
     fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1721109896&single=true&output=csv")
       .then(res => res.text())
       .then(csv => {
-        const rows = csv.split("\n").map(r => r.split(","));
+        const rows = csv.trim().split("\n").map(r => r.split(","));
         const headers = rows.shift();
         const idIndex = headers.indexOf("ID Client");
 
@@ -87,9 +86,9 @@
 
         const nom = row[1];
         const prenom = row[2];
-        const points = parseInt(row[4]) || 0;
-        const montant = parseFloat(row[5]) || 0;
-        const menus = parseInt(row[6]) || 0;
+        const points = parseInt(row[5]) || 0;
+        const montant = parseFloat(row[6]) || 0;
+        const menus = parseInt(row[8]) || 0;
 
         document.getElementById("id").textContent = clientId;
         document.getElementById("nom").textContent = nom;
