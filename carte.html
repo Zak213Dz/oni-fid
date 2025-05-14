@@ -89,16 +89,16 @@
           return;
         }
 
-        const nom = row[0];       // A : Nom
-        const prenom = row[1];    // B : Prénom
-        const points = parseInt(row[3] || 0); // D : Points
-        const montant = parseFloat(row[4] || 0).toFixed(2); // E : Montant cumulé
-        const menus = parseInt(row[6] || 0); // G : Menus offerts
+        const nom = row[0];
+        const prenom = row[1];
+        const points = parseInt(row[4]) || 0;
+        const montant = parseFloat(row[5]) || 0;
+        const menus = parseInt(row[7]) || 0;
 
         document.getElementById("id").textContent = clientId;
         document.getElementById("nom").textContent = nom;
         document.getElementById("prenom").textContent = prenom;
-        document.getElementById("montant").textContent = montant;
+        document.getElementById("montant").textContent = montant.toFixed(2);
         document.getElementById("menus").textContent = menus;
 
         const casesContainer = document.getElementById("cases");
