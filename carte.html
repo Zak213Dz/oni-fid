@@ -12,8 +12,8 @@
       padding: 20px;
     }
     .logo img {
-      width: 160px; /* agrandi encore */
-      margin-bottom: 15px;
+      width: 180px;
+      margin-bottom: 10px;
     }
     .carte-container {
       max-width: 320px;
@@ -42,10 +42,10 @@
     .case.filled::after {
       content: "";
       position: absolute;
-      top: 4px;
-      left: 4px;
-      width: 32px;
-      height: 32px;
+      top: 8px;
+      left: 8px;
+      width: 24px;
+      height: 24px;
       border-top: 4px solid black;
       transform: rotate(45deg);
       transform-origin: center;
@@ -88,14 +88,14 @@
 
         const nom = row[1];
         const prenom = row[2];
-        const points = parseInt(row[5] || 0);
-        const montant = parseFloat(row[6] || 0).toFixed(2);
-        const menus = parseInt(row[8] || 0);
+        const points = parseInt(row[5]) || 0;
+        const montant = parseFloat(row[6]) || 0;
+        const menus = parseInt(row[8]) || 0;
 
         document.getElementById("id").textContent = clientId;
         document.getElementById("nom").textContent = nom;
         document.getElementById("prenom").textContent = prenom;
-        document.getElementById("montant").textContent = montant;
+        document.getElementById("montant").textContent = montant.toFixed(2);
         document.getElementById("menus").textContent = menus;
 
         const casesContainer = document.getElementById("cases");
