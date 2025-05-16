@@ -10,16 +10,15 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvl
     const idIndex = headers.indexOf("ID Client");
 
     const row = rows.find(r => r[idIndex] === clientId);
-    if (!row) {
-      document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
+    if (!row || row.length < 9) {
+      document.body.innerHTML = "<h2 style='color:white'>Client introuvable ou données incomplètes</h2>";
       return;
     }
 
-    // Lire les bonnes colonnes fixes par position
-    const nom = row[1];
-    const prenom = row[2];
+    const nom = row[1] || "";
+    const prenom = row[2] || "";
     const points = parseInt(row[5]) || 0;
-    const montant = parseFloat(row[6].replace(",", ".")) || 0;
+    const montant = parseFloat((row[6] || "0").replace(",", ".")) || 0;
     const menus = parseInt(row[8]) || 0;
 
     document.getElementById("id").textContent = clientId;
@@ -44,6 +43,6 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvl
   })
   .catch(error => {
     document.body.innerHTML = "<h2 style='color:white'>Erreur de chargement</h2>";
-    console.error(error);
+    console.error("Erreur de récupération CSV :", error);
   });
 </script>
