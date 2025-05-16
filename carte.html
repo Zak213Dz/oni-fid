@@ -12,7 +12,7 @@
       padding: 20px;
     }
     .logo img {
-      width: 100px; /* Agrandi le logo */
+      width: 100px;
       margin-bottom: 10px;
     }
     .carte-container {
@@ -40,15 +40,13 @@
       position: relative;
     }
     .barre {
-      content: '';
       position: absolute;
       top: 50%;
-      left: 0;
-      width: 100%;
+      left: 50%;
+      width: 36px;
       height: 2px;
       background-color: black;
-      transform: rotate(-45deg);
-      transform-origin: center;
+      transform: translate(-50%, -50%) rotate(-45deg);
     }
     .qr {
       margin-top: 20px;
@@ -64,8 +62,8 @@
     <div class="info"><strong>Nom :</strong> <span id="nom"></span></div>
     <div class="info"><strong>Prénom :</strong> <span id="prenom"></span></div>
     <div class="cases" id="cases"></div>
-    <div class="info"><strong>Montant cumulé :</strong> <span id="montant"></span> €</div>
-    <div class="info"><strong>Menus offerts :</strong> <span id="menus"></span></div>
+    <div class="info"><strong>Montant cumulé :</strong> <span id="montant">0.00</span> €</div>
+    <div class="info"><strong>Menus offerts :</strong> <span id="menus">0</span></div>
     <div class="qr"><img id="qr" src="" alt="QR Code"></div>
   </div>
 
@@ -86,18 +84,21 @@
           return;
         }
 
+        // Lecture des colonnes
         const nom = row[headers.indexOf("Nom")];
         const prenom = row[headers.indexOf("Prénom")];
         const points = parseInt(row[headers.indexOf("Total Points")]) || 0;
         const montant = parseFloat((row[headers.indexOf("Montant Cumulé")] || "0").replace(",", ".")) || 0;
         const menus = parseInt(row[headers.indexOf("Menus offerts")]) || 0;
 
+        // Remplissage
         document.getElementById("id").textContent = clientId;
         document.getElementById("nom").textContent = nom;
         document.getElementById("prenom").textContent = prenom;
         document.getElementById("montant").textContent = montant.toFixed(2);
         document.getElementById("menus").textContent = menus;
 
+        // Affichage des points
         const casesContainer = document.getElementById("cases");
         for (let i = 0; i < 10; i++) {
           const div = document.createElement("div");
@@ -110,8 +111,12 @@
           casesContainer.appendChild(div);
         }
 
-        const qrCode = document.getElementById("qr");
-        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
+        // QR Code
+        document.getElementById("qr").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
+      })
+      .catch(error => {
+        document.body.innerHTML = "<h2 style='color:white'>Erreur de chargement</h2>";
+        console.error(error);
       });
   </script>
 </body>
