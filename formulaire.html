@@ -59,7 +59,7 @@
       .then(response => response.text())
       .then(idClient => {
         // Redirection vers la carte avec l'ID généré
-        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${idClient}`;
+        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?token=${generatedToken}`;
       })
       .catch(error => {
         alert("Une erreur est survenue : " + error);
