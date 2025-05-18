@@ -70,7 +70,7 @@
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const clientId = urlParams.get('id');
+    const token = urlParams.get('token');
 
     fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1721109896&single=true&output=csv")
       .then(res => res.text())
@@ -79,7 +79,8 @@
         const headers = rows.shift();
         const idIndex = 4; // "ID Client" column index
 
-        const row = rows.find(r => r[idIndex] === clientId);
+        const tokenIndex = headers.indexOf("Token");
+const row = rows.find(r => r[tokenIndex] === token);
         if (!row) {
           document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
           return;
