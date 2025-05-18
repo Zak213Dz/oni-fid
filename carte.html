@@ -1,3 +1,4 @@
+<!-- NOUVELLE VERSION SECURISEE DE carte.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -77,21 +78,21 @@
       .then(csv => {
         const rows = csv.split("\n").map(r => r.split(","));
         const headers = rows.shift();
-        const idIndex = 4; // "ID Client" column index
-
         const tokenIndex = headers.indexOf("Token");
-const row = rows.find(r => r[tokenIndex] === token);
+        const row = rows.find(r => r[tokenIndex] === token);
+
         if (!row) {
           document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
           return;
         }
 
+        const id = row[4];
         const nom = row[1];
         const prenom = row[2];
         const points = parseInt(row[5]) || 0;
         const menus = parseInt(row[8]) || 0;
 
-        document.getElementById("id").textContent = clientId;
+        document.getElementById("id").textContent = id;
         document.getElementById("nom").textContent = nom;
         document.getElementById("prenom").textContent = prenom;
         document.getElementById("menus").textContent = menus;
@@ -108,8 +109,7 @@ const row = rows.find(r => r[tokenIndex] === token);
           casesContainer.appendChild(div);
         }
 
-        const qrCode = document.getElementById("qr");
-        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
+        document.getElementById("qr").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?token=${token}`;
       });
   </script>
 </body>
