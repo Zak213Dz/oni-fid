@@ -5,113 +5,77 @@
   <title>Carte de fidélité</title>
   <style>
     body {
-      background-color: #111;
-      color: white;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
       padding: 20px;
     }
-    .logo img {
-      width: 120px;
-      margin-bottom: 10px;
-    }
-    .carte-container {
-      max-width: 300px;
-      margin: auto;
-      background-color: #222;
+    .carte {
+      border: 2px solid black;
+      border-radius: 15px;
       padding: 20px;
-      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
     }
-    .info {
-      margin: 10px 0;
-    }
-    .cases {
-      display: grid;
-      grid-template-columns: repeat(5, 40px);
-      grid-gap: 8px;
-      justify-content: center;
-      margin: 20px 0;
-    }
-    .case {
-      width: 40px;
-      height: 40px;
-      background-color: white;
-      border-radius: 6px;
-      position: relative;
-    }
-    .barre {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background-color: black;
-      transform: rotate(-45deg);
-      transform-origin: center;
-    }
-    .qr {
-      margin-top: 20px;
+    .erreur {
+      color: red;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="carte-container">
-    <div class="logo">
-      <img src="https://zak213dz.github.io/oni-fid/logo-blanc.png" alt="logo blanc">
-    </div>
-    <div class="info"><strong>ID :</strong> <span id="id"></span></div>
-    <div class="info"><strong>Nom :</strong> <span id="nom"></span></div>
-    <div class="info"><strong>Prénom :</strong> <span id="prenom"></span></div>
-    <div class="cases" id="cases"></div>
-    <div class="info"><strong>Menus offerts :</strong> <span id="menus"></span></div>
-    <div class="qr"><img id="qr" src="" alt="QR Code"></div>
-  </div>
 
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const clientId = urlParams.get('id');
-    const clientToken = urlParams.get('token');
+<div class="carte" id="carte">
+  Chargement de la carte...
+</div>
 
-    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1721109896&single=true&output=csv")
-      .then(res => res.text())
-      .then(csv => {
-        const rows = csv.split("\n").map(r => r.split(","));
-        const headers = rows.shift();
-        const idIndex = 4;
-        const tokenIndex = 9;
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get('id');
+  const token = urlParams.get('token');
 
-        const row = rows.find(r => r[idIndex] === clientId && r[tokenIndex] === clientToken);
-        if (!row) {
-          document.body.innerHTML = "<h2 style='color:white'>Client introuvable ou token invalide</h2>";
-          return;
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/1s0Vi2JkXSCcnJ7itwtheTw9cdf35LxWbQ3IZxu9lXE/gviz/tq?tqx=out:csv&sheet=Réponses%20Formulaire";
+
+  fetch(CSV_URL)
+    .then(response => response.text())
+    .then(data => {
+      const lignes = data.split("\n").slice(1); // Ignore l'en-tête
+      let clientTrouve = false;
+
+      for (let ligne of lignes) {
+        const colonnes = ligne.split(",");
+        const clientId = colonnes[4]?.trim();    // Colonne E = ID
+        const clientNom = colonnes[1]?.trim();   // Colonne B = Nom
+        const clientPrenom = colonnes[2]?.trim(); // Colonne C = Prénom
+        const points = colonnes[5]?.trim();      // Colonne F = Points
+        const menus = colonnes[8]?.trim();       // Colonne I = Menus offerts
+        const clientToken = colonnes[9]?.trim(); // Colonne J = Token
+
+        if (clientId === id && clientToken === token) {
+          document.getElementById("carte").innerHTML = `
+            <h2>Carte de fidélité</h2>
+            <p><strong>${clientPrenom} ${clientNom}</strong></p>
+            <p>ID client : ${clientId}</p>
+            <p>Points : ${points}</p>
+            <p>Menus offerts : ${menus}</p>
+          `;
+          clientTrouve = true;
+          break;
         }
+      }
 
-        const nom = row[1];
-        const prenom = row[2];
-        const points = parseInt(row[5]) || 0;
-        const menus = parseInt(row[8]) || 0;
+      if (!clientTrouve) {
+        document.getElementById("carte").innerHTML = `
+          <p class="erreur">Client introuvable ou lien invalide.</p>
+        `;
+      }
+    })
+    .catch(error => {
+      document.getElementById("carte").innerHTML = `
+        <p class="erreur">Erreur lors du chargement : ${error.message}</p>
+      `;
+    });
+</script>
 
-        document.getElementById("id").textContent = clientId;
-        document.getElementById("nom").textContent = nom;
-        document.getElementById("prenom").textContent = prenom;
-        document.getElementById("menus").textContent = menus;
-
-        const casesContainer = document.getElementById("cases");
-        for (let i = 0; i < 10; i++) {
-          const div = document.createElement("div");
-          div.className = "case";
-          if (i < points) {
-            const barre = document.createElement("div");
-            barre.className = "barre";
-            div.appendChild(barre);
-          }
-          casesContainer.appendChild(div);
-        }
-
-        const qrCode = document.getElementById("qr");
-        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}&token=${clientToken}`;
-      });
-  </script>
 </body>
 </html>
+
