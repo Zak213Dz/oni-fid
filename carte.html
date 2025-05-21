@@ -2,115 +2,72 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Carte de fidélité</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulaire d'inscription</title>
   <style>
     body {
-      background-color: #111;
-      color: white;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 20px;
+      padding-top: 50px;
     }
-    .logo img {
-      width: 120px;
-      margin-bottom: 10px;
-    }
-    .carte-container {
+    form {
+      display: inline-block;
+      text-align: left;
       max-width: 300px;
-      margin: auto;
-      background-color: #222;
-      padding: 20px;
-      border-radius: 12px;
     }
-    .info {
-      margin: 10px 0;
-    }
-    .cases {
-      display: grid;
-      grid-template-columns: repeat(5, 40px);
-      grid-gap: 8px;
-      justify-content: center;
-      margin: 20px 0;
-    }
-    .case {
-      width: 40px;
-      height: 40px;
-      background-color: white;
-      border-radius: 6px;
-      position: relative;
-    }
-    .barre {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
+    input[type="text"], input[type="tel"] {
       width: 100%;
-      height: 2px;
-      background-color: black;
-      transform: rotate(-45deg);
-      transform-origin: center;
+      padding: 10px;
+      margin: 8px 0;
+      box-sizing: border-box;
     }
-    .qr {
-      margin-top: 20px;
+    input[type="submit"] {
+      background-color: black;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="carte-container">
-    <div class="logo">
-      <img src="https://zak213dz.github.io/oni-fid/logo-blanc.png" alt="logo blanc">
-    </div>
-    <div class="info"><strong>ID :</strong> <span id="id"></span></div>
-    <div class="info"><strong>Nom :</strong> <span id="nom"></span></div>
-    <div class="info"><strong>Prénom :</strong> <span id="prenom"></span></div>
-    <div class="cases" id="cases"></div>
-    <div class="info"><strong>Menus offerts :</strong> <span id="menus"></span></div>
-    <div class="qr"><img id="qr" src="" alt="QR Code"></div>
-  </div>
+  <h1>Formulaire d'inscription</h1>
+  <form id="inscription-form">
+    <input type="text" name="nom" placeholder="Nom" required>
+    <input type="text" name="prenom" placeholder="Prénom" required>
+    <input type="tel" name="telephone" placeholder="Téléphone" required>
+    <input type="submit" value="Envoyer">
+  </form>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const form = document.getElementById("inscription-form");
 
-    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1721109896&single=true&output=csv")
-      .then(res => res.text())
-      .then(csv => {
-        const rows = csv.split("\n").map(r => r.split(","));
-        const headers = rows.shift();
-        const tokenIndex = 10; // Colonne K : "Token"
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
 
-        const row = rows.find(r => r[tokenIndex] === token);
-        if (!row) {
-          document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
-          return;
+      const formData = new FormData(form);
+      const params = new URLSearchParams();
+
+      for (const pair of formData.entries()) {
+        params.append(pair[0], pair[1]);
+      }
+
+      fetch("https://script.google.com/macros/s/AKfycbxVCSKg4Qmqam0MD3at6QvRMB0k1TFPfPGBY1DWL45Fit0mbkYusyXVgRNwWI7nNqXD3w/exec", {
+        method: "POST",
+        body: params
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.token) {
+          window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?token=${data.token}`;
+        } else {
+          alert("Une erreur est survenue : réponse invalide");
         }
-
-        const nom = row[1];
-        const prenom = row[2];
-        const idClient = row[4];
-        const points = parseInt(row[5]) || 0;
-        const menus = parseInt(row[8]) || 0;
-
-        document.getElementById("id").textContent = idClient;
-        document.getElementById("nom").textContent = nom;
-        document.getElementById("prenom").textContent = prenom;
-        document.getElementById("menus").textContent = menus;
-
-        const casesContainer = document.getElementById("cases");
-        for (let i = 0; i < 10; i++) {
-          const div = document.createElement("div");
-          div.className = "case";
-          if (i < points) {
-            const barre = document.createElement("div");
-            barre.className = "barre";
-            div.appendChild(barre);
-          }
-          casesContainer.appendChild(div);
-        }
-
-        const qrCode = document.getElementById("qr");
-        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?token=${token}`;
+      })
+      .catch(error => {
+        alert("Une erreur est survenue : " + error);
       });
+    });
   </script>
 </body>
 </html>
