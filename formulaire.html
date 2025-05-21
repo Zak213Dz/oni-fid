@@ -44,9 +44,9 @@
 
     form.addEventListener("submit", function(e) {
       e.preventDefault();
-
       const formData = new FormData(form);
       const params = new URLSearchParams();
+
       for (const pair of formData.entries()) {
         params.append(pair[0], pair[1]);
       }
@@ -58,6 +58,7 @@
       .then(response => response.text())
       .then(result => {
         const [id, token] = result.split("|");
+        if (!id || !token) throw new Error("ID ou token manquant");
         window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}&token=${token}`;
       })
       .catch(error => {
