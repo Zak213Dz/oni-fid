@@ -1,3 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Carte de fidélité</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .carte {
+      border: 2px solid black;
+      border-radius: 15px;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+    }
+    .erreur {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="carte" id="carte">Chargement...</div>
+
 <script>
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id');
@@ -11,13 +40,8 @@
     complete: function(results) {
       const data = results.data;
 
-      // DEBUG : log les paramètres et la 1re ligne
-      console.log("ID dans URL :", id);
-      console.log("Token dans URL :", token);
-      console.log("Première ligne CSV :", data[0]);
-      console.log("Toutes les lignes :", data);
-
-      let client = data.find(row =>
+      // Recherche de la ligne avec ID + Token
+      const client = data.find(row =>
         row["ID Client"]?.trim() === id &&
         row["Token"]?.trim() === token
       );
@@ -32,8 +56,9 @@
         `;
       } else {
         document.getElementById("carte").innerHTML = `
-          <p class="erreur">Client introuvable ou lien invalide.</p>
-          <pre>ID=${id}, Token=${token}</pre>
+          <p class="erreur">❌ Lien invalide ou expiré.</p>
+          <p>ID : ${id}</p>
+          <p>Token : ${token}</p>
         `;
       }
     },
@@ -42,3 +67,6 @@
     }
   });
 </script>
+
+</body>
+</html>
