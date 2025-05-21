@@ -55,8 +55,10 @@
         method: "POST",
         body: params
       })
-      .then(response => response.json())  // correction ici
-      .then(data => {
+      .then(response => response.text())
+      .then(text => {
+        console.log("Réponse brute :", text); // 👈 voir la vraie réponse reçue
+        const data = JSON.parse(text);
         const { id, token } = data;
         window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}&token=${token}`;
       })
