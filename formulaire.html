@@ -55,15 +55,13 @@
         method: "POST",
         body: params
       })
-      .then(response => response.text())
-      .then(result => {
-        if (!result.includes("|")) throw new Error("ID ou token manquant");
+     .then(response => response.text())
+.then(result => {
+  if (!result.includes("|")) throw new Error("ID ou token manquant");
 
-        const [id, token] = result.split("|");
-
-        // Redirection vers carte.html avec ID + token dans l'URL
-        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}&token=${token}`;
-      })
+  const [id, token] = result.split("|");
+  window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}&token=${token}`;
+})
       .catch(error => {
         alert("Une erreur est survenue : " + error.message);
       });
