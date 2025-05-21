@@ -1,70 +1,47 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulaire d'inscription</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
-    }
-    form {
-      display: inline-block;
-      text-align: left;
-      max-width: 300px;
-    }
-    input[type="text"], input[type="tel"] {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      box-sizing: border-box;
-    }
-    input[type="submit"] {
-      background-color: black;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      cursor: pointer;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <title>Inscription Carte Fidélité</title>
 </head>
 <body>
-  <h1>Formulaire d'inscription</h1>
-  <form id="inscription-form">
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="prenom" placeholder="Prénom" required>
-    <input type="tel" name="telephone" placeholder="Téléphone" required>
-    <input type="submit" value="Envoyer">
+  <form id="fideliteForm">
+    <input type="text" name="nom" placeholder="Nom" required><br>
+    <input type="text" name="prenom" placeholder="Prénom" required><br>
+    <input type="tel" name="telephone" placeholder="Téléphone" required><br>
+    <button type="submit">Envoyer</button>
   </form>
 
   <script>
-    const form = document.getElementById("inscription-form");
-
-    form.addEventListener("submit", function(e) {
+    document.getElementById("fideliteForm").addEventListener("submit", async function (e) {
       e.preventDefault();
 
-      const formData = new FormData(form);
-      const params = new URLSearchParams();
+      const nom = document.querySelector('input[name="nom"]').value;
+      const prenom = document.querySelector('input[name="prenom"]').value;
+      const telephone = document.querySelector('input[name="telephone"]').value;
 
-      for (const pair of formData.entries()) {
-        params.append(pair[0], pair[1]);
+      const url = "https://script.google.com/macros/s/AKfycbxNofPGteouF23bdDXTz4UeG9JgEyWCDfMc4wRCN9WvlgiH929gXW74aqH3iO0bVezq/exec";
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ nom, prenom, telephone })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          const redirectUrl = `https://ton-utilisateur.github.io/cartes/carte.html?id=${result.id}&token=${result.token}`;
+          window.location.href = redirectUrl;
+        } else {
+          alert("Erreur : " + result.error);
+        }
+      } catch (error) {
+        alert("Erreur fetch : " + error);
       }
-
-      fetch("https://script.google.com/macros/s/AKfycbxVCSKg4Qmqam0MD3at6QvRMB0k1TFPfPGBY1DWL45Fit0mbkYusyXVgRNwWI7nNqXD3w/exec", {
-        method: "POST",
-        body: params
-      })
-      .then(response => response.text())
-      .then(result => {
-        if (!result.includes("|")) throw new Error("Réponse mal formée : " + result);
-        const [id, token] = result.split("|");
-        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}&token=${token}`;
-      })
-      .catch(error => {
-        alert("Une erreur est survenue : " + error.message);
-      });
     });
   </script>
 </body>
