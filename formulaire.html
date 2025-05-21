@@ -56,10 +56,9 @@
         method: "POST",
         body: params
       })
-      .then(response => response.text())
-      .then(idClient => {
-        // Redirection vers la carte avec l'ID généré
-        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${idClient}`;
+      .then(response => response.json())
+      .then(data => {
+        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?token=${data.token}`;
       })
       .catch(error => {
         alert("Une erreur est survenue : " + error);
