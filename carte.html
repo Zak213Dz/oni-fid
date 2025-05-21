@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Carte de fidélité</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -24,9 +25,7 @@
 </head>
 <body>
 
-<div class="carte" id="carte">
-  Chargement de la carte...
-</div>
+<div class="carte" id="carte">Chargement...</div>
 
 <script>
   const urlParams = new URLSearchParams(window.location.search);
@@ -35,47 +34,30 @@
 
   const CSV_URL = "https://docs.google.com/spreadsheets/d/1s0Vi2JkXSCcnJ7itwtheTw9cdf35LxWbQ3IZxu9lXE/gviz/tq?tqx=out:csv&sheet=Réponses%20Formulaire";
 
-  fetch(CSV_URL)
-    .then(response => response.text())
-    .then(data => {
-      const lignes = data.split("\n").slice(1); // Ignore l'en-tête
-      let clientTrouve = false;
+  Papa.parse(CSV_URL, {
+    download: true,
+    header: true,
+    complete: function(results) {
+      const data = results.data;
+      let client = data.find(row => row["ID Client"] === id && row["Token"] === token);
 
-      for (let ligne of lignes) {
-        const colonnes = ligne.split(",");
-        const clientId = colonnes[4]?.trim();    // Colonne E = ID
-        const clientNom = colonnes[1]?.trim();   // Colonne B = Nom
-        const clientPrenom = colonnes[2]?.trim(); // Colonne C = Prénom
-        const points = colonnes[5]?.trim();      // Colonne F = Points
-        const menus = colonnes[8]?.trim();       // Colonne I = Menus offerts
-        const clientToken = colonnes[9]?.trim(); // Colonne J = Token
-
-        if (clientId === id && clientToken === token) {
-          document.getElementById("carte").innerHTML = `
-            <h2>Carte de fidélité</h2>
-            <p><strong>${clientPrenom} ${clientNom}</strong></p>
-            <p>ID client : ${clientId}</p>
-            <p>Points : ${points}</p>
-            <p>Menus offerts : ${menus}</p>
-          `;
-          clientTrouve = true;
-          break;
-        }
-      }
-
-      if (!clientTrouve) {
+      if (client) {
         document.getElementById("carte").innerHTML = `
-          <p class="erreur">Client introuvable ou lien invalide.</p>
+          <h2>Carte de fidélité</h2>
+          <p><strong>${client["Prénom"]} ${client["Nom"]}</strong></p>
+          <p>ID : ${client["ID Client"]}</p>
+          <p>Points : ${client["Total points actuel"]}</p>
+          <p>Menus offerts : ${client["Menus offerts"]}</p>
         `;
+      } else {
+        document.getElementById("carte").innerHTML = `<p class="erreur">Client introuvable ou lien invalide.</p>`;
       }
-    })
-    .catch(error => {
-      document.getElementById("carte").innerHTML = `
-        <p class="erreur">Erreur lors du chargement : ${error.message}</p>
-      `;
-    });
+    },
+    error: function(error) {
+      document.getElementById("carte").innerHTML = `<p class="erreur">Erreur de lecture : ${error.message}</p>`;
+    }
+  });
 </script>
 
 </body>
 </html>
-
