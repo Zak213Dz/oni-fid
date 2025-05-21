@@ -47,7 +47,6 @@
 
       const formData = new FormData(form);
       const params = new URLSearchParams();
-
       for (const pair of formData.entries()) {
         params.append(pair[0], pair[1]);
       }
@@ -56,10 +55,11 @@
         method: "POST",
         body: params
       })
-     .then(response => response.text())
-.then(token => {
-  window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?token=${token}`;
-})
+      .then(response => response.json())
+      .then(data => {
+        const { id, token } = data;
+        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${id}&token=${token}`;
+      })
       .catch(error => {
         alert("Une erreur est survenue : " + error);
       });
