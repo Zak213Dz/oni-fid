@@ -3,39 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <title>Inscription Carte de Fidélité</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 320px;
+      text-align: center;
+    }
+    input, button {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Inscris-toi à notre carte fidélité</h2>
-  <form id="fideliteForm">
-    <input type="text" name="nom" placeholder="Nom" required><br>
-    <input type="text" name="prenom" placeholder="Prénom" required><br>
-    <input type="tel" name="telephone" placeholder="Téléphone" required><br>
-    <button type="submit">Créer ma carte</button>
-  </form>
+
+  <div class="form-container">
+    <h2>Créer ma carte</h2>
+    <form id="fideliteForm">
+      <input type="text" name="nom" placeholder="Nom" required><br>
+      <input type="text" name="prenom" placeholder="Prénom" required><br>
+      <input type="tel" name="telephone" placeholder="Téléphone" required><br>
+      <button type="submit">Créer ma carte</button>
+    </form>
+    <div id="message" class="error"></div>
+  </div>
 
   <script>
     document.getElementById("fideliteForm").addEventListener("submit", async function(e) {
       e.preventDefault();
+      document.getElementById("message").innerText = "";
 
       const nom = document.querySelector('input[name="nom"]').value.trim();
       const prenom = document.querySelector('input[name="prenom"]').value.trim();
       const telephone = document.querySelector('input[name="telephone"]').value.trim();
 
-      const response = await fetch("https://script.google.com/macros/s/AKfycbzqd0uY1JQfKz-0_HUAcRAV2cCwtHBVsjJIsggFWWyaag74axhmVuddflCzH-iB-hLzGg/exec", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ nom, prenom, telephone })
-      });
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbzqd0uY1JQfKz-0_HUAcRAV2cCwtHBVsjJIsggFWWyaag74axhmVuddflCzH-iB-hLzGg/exec", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ nom, prenom, telephone })
+        });
 
-      const result = await response.json();
-      if (result.success && result.id) {
-        window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${result.id}`;
-      } else {
-        alert("Erreur : " + result.error);
+        const result = await response.json();
+
+        if (result.success && result.id) {
+          window.location.href = `https://zak213dz.github.io/oni-fid/carte.html?id=${result.id}`;
+        } else {
+          document.getElementById("message").innerText = "Erreur : " + (result.error || "Une erreur inconnue.");
+        }
+      } catch (error) {
+        document.getElementById("message").innerText = "Erreur réseau : " + error.message;
       }
     });
   </script>
+
 </body>
 </html>
