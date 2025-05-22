@@ -4,69 +4,34 @@
   <meta charset="UTF-8">
   <title>Carte de fidélité</title>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    .carte {
-      border: 2px solid black;
-      border-radius: 15px;
-      padding: 20px;
-      max-width: 400px;
-      margin: auto;
-    }
-    .erreur {
-      color: red;
-      font-weight: bold;
-    }
-  </style>
 </head>
 <body>
+  <div id="carte">Chargement de la carte...</div>
 
-<div class="carte" id="carte">Chargement...</div>
+  <script>
+    const id = new URLSearchParams(window.location.search).get("id");
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/1s0Vi2JkXSCcnJ7itwtheTw9cdf35LxWbQ3IZxu9lXE/gviz/tq?tqx=out:csv&sheet=Réponses%20Formulaire";
 
-<script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
-  const token = urlParams.get('token');
+    Papa.parse(CSV_URL, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        const data = results.data;
+        const client = data.find(row => row["Clé"]?.trim() === id);
 
-  const CSV_URL = "https://docs.google.com/spreadsheets/d/1s0Vi2JkXSCcnJ7itwtheTw9cdf35LxWbQ3IZxu9lXE/gviz/tq?tqx=out:csv&sheet=Réponses%20Formulaire";
-
-  Papa.parse(CSV_URL, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      const data = results.data;
-
-      // Recherche de la ligne avec ID + Token
-      const client = data.find(row =>
-        row["ID Client"]?.trim() === id &&
-        row["Token"]?.trim() === token
-      );
-
-      if (client) {
-        document.getElementById("carte").innerHTML = `
-          <h2>Carte de fidélité</h2>
-          <p><strong>${client["Prénom"]} ${client["Nom"]}</strong></p>
-          <p>ID : ${client["ID Client"]}</p>
-          <p>Points : ${client["Total points actuel"]}</p>
-          <p>Menus offerts : ${client["Menus offerts"]}</p>
-        `;
-      } else {
-        document.getElementById("carte").innerHTML = `
-          <p class="erreur">❌ Lien invalide ou expiré.</p>
-          <p>ID : ${id}</p>
-          <p>Token : ${token}</p>
-        `;
+        if (client) {
+          document.getElementById("carte").innerHTML = `
+            <h2>Carte de fidélité</h2>
+            <p><strong>${client["Prénom"]} ${client["Nom"]}</strong></p>
+            <p>ID : ${client["ID Client"]}</p>
+            <p>Points : ${client["Total points actuel"]}</p>
+            <p>Menus offerts : ${client["Menus offerts"]}</p>
+          `;
+        } else {
+          document.getElementById("carte").innerHTML = "<p>Carte introuvable ou lien invalide.</p>";
+        }
       }
-    },
-    error: function(error) {
-      document.getElementById("carte").innerHTML = `<p class="erreur">Erreur de lecture : ${error.message}</p>`;
-    }
-  });
-</script>
-
+    });
+  </script>
 </body>
 </html>
