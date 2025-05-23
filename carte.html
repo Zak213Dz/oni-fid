@@ -71,17 +71,19 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const clientId = urlParams.get('id');
+    const clientToken = urlParams.get('token');
 
     fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0J_iakEUYtcP-RPRlVNTBvlPPJ8mqsz7hnPWFSNl-9TihVe9pYwH00kroVBIEF2JrqkqtYZWLmUos/pub?gid=1721109896&single=true&output=csv")
       .then(res => res.text())
       .then(csv => {
         const rows = csv.split("\n").map(r => r.split(","));
         const headers = rows.shift();
-        const idIndex = 4; // "ID Client" column index
+        const idIndex = 4;
+        const tokenIndex = 9;
 
-        const row = rows.find(r => r[idIndex] === clientId);
+        const row = rows.find(r => r[idIndex] === clientId && r[tokenIndex] === clientToken);
         if (!row) {
-          document.body.innerHTML = "<h2 style='color:white'>Client introuvable</h2>";
+          document.body.innerHTML = "<h2 style='color:white'>Client introuvable ou token invalide</h2>";
           return;
         }
 
@@ -108,7 +110,7 @@
         }
 
         const qrCode = document.getElementById("qr");
-        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}`;
+        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zak213dz.github.io/oni-fid/carte.html?id=${clientId}&token=${clientToken}`;
       });
   </script>
 </body>
